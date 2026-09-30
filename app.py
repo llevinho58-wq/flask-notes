@@ -4,6 +4,12 @@ app = Flask(__name__)
 notes = []
 next_id = 1
 
+def get_note(note_id: int):
+    for note in notes:
+        if note["id"] == note_id:
+            return note
+    return None
+
 @app.get("/notes")
 def get_notes():
     return notes
@@ -22,10 +28,10 @@ def add_notes():
 
 @app.get("/notes/<int:note_id>")
 def get_note_by_id(note_id: int):
-    for note in notes:
-        if note["id"] == note_id:
-            return note
-    return {"error": "Note not found"}, 404
+    note = get_note(note_id)
+    if not note:
+        return {"error": "Note not found"}, 404
+    return note
 
 @app.delete("/notes/<int:note_id>")
 def delete_note(note_id: int):
