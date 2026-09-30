@@ -1,0 +1,37 @@
+GET http://127.0.0.1:5000/notes
+###
+
+POST http://127.0.0.1:5000/notes
+Content-Type: application/json
+
+{"note": "first note"}
+###
+
+POST http://127.0.0.1:5000/notes
+Content-Type: application/json
+
+{"note": "this is the test note."}
+###
+
+POST http://127.0.0.1:5000/notes
+Content-Type: application/json
+
+{"note": "this is the second note."}
+###
+
+POST http://127.0.0.1:5000/notes
+Content-Type: application/json
+
+{}
+###
+
+GET http://127.0.0.1:5000/notes/2
+###
+
+DELETE http://127.0.0.1:5000/notes/4
+###
+
+PUT http://127.0.0.1:5000/notes/7
+Content-Type: application/json
+
+{"note": "edited text"}
