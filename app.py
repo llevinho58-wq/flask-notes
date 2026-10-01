@@ -29,7 +29,7 @@ def add_notes():
 @app.get("/notes/<int:note_id>")
 def get_note_by_id(note_id: int):
     note = get_note(note_id)
-    if not note:
+    if note is None:
         return {"error": "Note Not Found!"}, 404
     return note
 
@@ -45,14 +45,15 @@ def delete_note(note_id: int):
 @app.put("/notes/<int:note_id>")
 def edit_the_note(note_id: int):
     data = request.get_json(silent=True)
-    if not data and data[""]:
-        return {"error": "Invalid data, 'note' key required"}, 400
+    if not data or ("note" not in data and "done" not in data):
+        return {"error": "Send 'note' and/or 'done'"}, 400
     if "done" in data and not isinstance(data["done"], bool):
         return {"error": "'done' must be true or false"}, 400
+    
     note = get_note(note_id)
-
     if note is None:
         return {"error": "Note Not Found!"}, 404
+    
     if "note" in data:
         note["note"] = data["note"]
     if "done" in data:
