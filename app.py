@@ -1,8 +1,22 @@
 from flask import Flask, request
+import sqlite3
 
 app = Flask(__name__)
 notes = []
 next_id = 1
+
+
+def get_db():
+    db = sqlite3.connect("notes.db")
+    db.row_factory = sqlite3.Row
+    db.execute(
+    "CREATE TABLE IF NOT EXISTS notes ("
+    "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+    "note TEXT NOT NULL, "
+    "done INTEGER DEFAULT 0)"
+    )
+    return db
+
 
 def get_note(note_id: int):
     for note in notes:
@@ -12,7 +26,9 @@ def get_note(note_id: int):
 
 @app.get("/notes")
 def get_notes():
-    return notes
+    db = get_db()
+    rows = db.execute("SELECT * FROM notes").fetchall()
+    return [dict(r) for r in rows]
 
 @app.post("/notes")
 def add_notes():
