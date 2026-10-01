@@ -24,27 +24,28 @@ def add_notes():
         notes.append(new_note)
         next_id += 1
         return new_note, 201
-    return{"error": "Invalid data, 'note' key required" }, 400
+    return {"error": "Invalid data, 'note' key required" }, 400
 
 @app.get("/notes/<int:note_id>")
 def get_note_by_id(note_id: int):
     note = get_note(note_id)
     if not note:
-        return {"error": "Note not found"}, 404
+        return {"error": "Note Not Found!"}, 404
     return note
 
 @app.delete("/notes/<int:note_id>")
 def delete_note(note_id: int):
-    for note in notes:
-        if note["id"] == note_id:
-            notes.remove(note)
-            return {"status": "Note removed"}, 200
-    return {"error": "Note Not Found!"}, 404
+    note = get_note(note_id)
+    if note is None:
+        return {"error": "Note Not Found!"}, 404
+    notes.remove(note)
+    return {"status": "Note removed"}, 200
+    
 
 @app.put("/notes/<int:note_id>")
 def edit_the_note(note_id: int):
     data = request.get_json(silent=True)
-    if not data or "note" not in data:
+    if not data and data[""]:
         return {"error": "Invalid data, 'note' key required"}, 400
     if "done" in data and not isinstance(data["done"], bool):
         return {"error": "'done' must be true or false"}, 400
@@ -52,9 +53,8 @@ def edit_the_note(note_id: int):
 
     if note is None:
         return {"error": "Note Not Found!"}, 404
-    if note in data:
+    if "note" in data:
         note["note"] = data["note"]
-        return note, 200
     if "done" in data:
         note["done"] = data["done"]
-    return note
+    return note, 200
