@@ -17,20 +17,24 @@ def get_db():
     )
     return db
 
+def note_to_dict(row):
+    note = dict(row)
+    note["done"] = bool(note["done"])
+    return note
 
 def get_note(note_id: int):
     db = get_db()
     row = db.execute("SELECT * FROM notes WHERE id = ?", (note_id,)).fetchone()
     if row is None:
         return None
-    return dict(row)
+    return note_to_dict(row)
 
 
 @app.get("/notes")
 def get_notes():
     db = get_db()
     rows = db.execute("SELECT * FROM notes").fetchall()
-    return [dict(r) for r in rows]
+    return [note_to_dict(r) for r in rows]
 
 @app.post("/notes")
 def add_notes():
