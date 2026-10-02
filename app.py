@@ -19,10 +19,12 @@ def get_db():
 
 
 def get_note(note_id: int):
-    for note in notes:
-        if note["id"] == note_id:
-            return note
-    return None
+    db = get_db()
+    row = db.execute("SELECT * FROM notes WHERE id = ?", (note_id,)).fetchone()
+    if row is None:
+        return None
+    return dict(row)
+
 
 @app.get("/notes")
 def get_notes():
@@ -32,15 +34,14 @@ def get_notes():
 
 @app.post("/notes")
 def add_notes():
-    global next_id
     data = request.get_json(silent=True)
-
     if data and "note" in data:
-        new_note = {"id": next_id, "note": data["note"], "done": False}
-        notes.append(new_note)
-        next_id += 1
-        return new_note, 201
-    return {"error": "Invalid data, 'note' key required" }, 400
+        db = get_db()
+        cur = db.execute("INSERT INTO notes (note) VALUES (?)", (data["note"],))
+        db.commit()
+        new_id = cur.lastrowid
+        return {"id": new_id, "note": data["note"], "done": False}, 201
+    return {"error": "Invalid data, 'note' key required"}, 400
 
 @app.get("/notes/<int:note_id>")
 def get_note_by_id(note_id: int):
@@ -54,7 +55,9 @@ def delete_note(note_id: int):
     note = get_note(note_id)
     if note is None:
         return {"error": "Note Not Found!"}, 404
-    notes.remove(note)
+    db = get_db()
+    db.execute("DELETE FROM notes WHERE id = ?", (note_id,))
+    db.commit()
     return {"status": "Note removed"}, 200
     
 
@@ -69,9 +72,12 @@ def edit_the_note(note_id: int):
     note = get_note(note_id)
     if note is None:
         return {"error": "Note Not Found!"}, 404
-    
+
+    db = get_db()
     if "note" in data:
-        note["note"] = data["note"]
+        db.execute("UPDATE notes SET note = ? WHERE id = ?", (data["note"], note_id))
     if "done" in data:
-        note["done"] = data["done"]
+        db.execute("UPDATE notes SET done = ?  WHERE id = ?", (data["done"], note_id))
+    db.commit()
+    note = get_note(note_id)
     return note, 200
